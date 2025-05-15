@@ -1,0 +1,24 @@
+{
+  "name": "upgradable-smart-contract-learning",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/drcm-ogawa-mitsunori/upgradable-smart-contract-learning#readme",
+  "bugs": {
+    "url": "https://github.com/drcm-ogawa-mitsunori/upgradable-smart-contract-learning/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drcm-ogawa-mitsunori/upgradable-smart-contract-learning.git"
+  },
+  "license": "MIT",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "hardhat": "^2.24.0",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0"
+  }
+}
