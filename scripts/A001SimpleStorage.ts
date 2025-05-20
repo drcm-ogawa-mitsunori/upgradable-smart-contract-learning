@@ -1,56 +1,19 @@
 import * as hre from "hardhat";
-
-const getStorageHex = async (contractAddress: string, slot: number | bigint) => {
-  const provider = hre.ethers.provider;
-  const storageHex = await provider.getStorage(contractAddress, slot);
-  console.log(`Slot${slot}:`, storageHex);
-  return storageHex;
-}
-
-const getLongString = async (contractAddress: string, slot: number, variableName: string) => {
-  const lengthHex = await getStorageHex(contractAddress, slot);
-  let length = BigInt(lengthHex);
-  console.log(`${variableName} length:`, length);
-  const baseSlotHath = hre.ethers.keccak256(hre.ethers.zeroPadValue(hre.ethers.toBeHex(slot), 32));
-  const baseSlotHathBn = BigInt(baseSlotHath);
-
-  const provider = hre.ethers.provider;
-  const list: string[] = [];
-  let i = 0n;
-  while (length > 0) {
-    const data = await provider.getStorage(contractAddress, baseSlotHathBn + i);
-    list.push(data.substring(2));
-    length -= 64n;
-    i += 1n;
-  }
-  console.log(`${variableName}:`, hre.ethers.toUtf8String(`0x${list.join("")}`));
-}
-
-const getDynamicUintArray = async (contractAddress: string, slot: number | bigint, variableName: string) => {
-  const lengthHex = await getStorageHex(contractAddress, slot);
-  let length = BigInt(lengthHex);
-  console.log(`${variableName} length:`, length);
-  const baseSlotHath = hre.ethers.keccak256(hre.ethers.zeroPadValue(hre.ethers.toBeHex(slot), 32));
-  const baseSlotHathBn = BigInt(baseSlotHath);
-
-  const provider = hre.ethers.provider;
-  for (const i of Array(parseInt(length.toString())).fill(0).keys()) {
-    const data = await provider.getStorage(contractAddress, baseSlotHathBn + BigInt(i));
-    console.log(`${variableName} index[${i}]:`, BigInt(data));
-  }
-}
+import { getStorageHex } from "./utils/getStorageHex";
+import { getDynamicUintArray } from "./utils/getDynamicUintArray";
+import { getLongString } from "./utils/getLongString";
 
 const getProfile = async (contractAddress: string, slot: bigint, variableName: string) => {
   const profileName = hre.ethers.toUtf8String((await getStorageHex(contractAddress, slot)).substring(0, 64));
   console.log(`${variableName}.name:`, profileName);
-  const profileAge = BigInt(await getStorageHex(contractAddress, slot + 1n));
+  const profileAge = parseInt(await getStorageHex(contractAddress, slot + 1n));
   console.log(`${variableName}.age:`, profileAge);
   await getDynamicUintArray(contractAddress, slot + 2n, `${variableName}.scores`);
 }
 
 const getDynamicProfileArray = async (contractAddress: string, slot: number, variableName: string) => {
   const lengthHex = await getStorageHex(contractAddress, slot);
-  let length = BigInt(lengthHex);
+  let length = parseInt(lengthHex);
   console.log(`${variableName} length:`, length);
   const baseSlotHath = hre.ethers.keccak256(hre.ethers.zeroPadValue(hre.ethers.toBeHex(slot), 32));
   const baseSlotHathBn = BigInt(baseSlotHath);
@@ -60,7 +23,7 @@ const getDynamicProfileArray = async (contractAddress: string, slot: number, var
     const nameHex = await provider.getStorage(contractAddress, baseSlotHathBn + BigInt(i * 3));
     console.log(`${variableName} index[${i}].name:`, hre.ethers.toUtf8String(nameHex));
     const ageHex = await provider.getStorage(contractAddress, baseSlotHathBn + BigInt(i * 3 + 1));
-    console.log(`${variableName} index[${i}].age:`, BigInt(ageHex));
+    console.log(`${variableName} index[${i}].age:`, parseInt(ageHex));
     await getDynamicUintArray(contractAddress, baseSlotHathBn + BigInt(i * 3 + 2), `${variableName} index[${i}].scores`);
   }
 }
@@ -79,7 +42,7 @@ async function main() {
 
   // uint256 public firstNum;
   // 32 bytes に収まる変数なので slot 0 のみに格納されている
-  const firstNum = BigInt(await getStorageHex(deployReceipt.contractAddress, 0));
+  const firstNum = parseInt(await getStorageHex(deployReceipt.contractAddress, 0));
   console.log("firstNum:", firstNum);
 
   // address public secondAddr;
@@ -90,7 +53,7 @@ async function main() {
   // uint256 private thirdNum;
   // 32 bytes に収まる変数なので slot 2 のみに格納されている
   // private でも関係なく取得できる
-  const thirdNum = BigInt(await getStorageHex(deployReceipt.contractAddress, 2));
+  const thirdNum = parseInt(await getStorageHex(deployReceipt.contractAddress, 2));
   console.log("thirdNum:", thirdNum);
 
   // string public fourthStr;
@@ -106,11 +69,11 @@ async function main() {
 
   // uint256[3] public sixthNums;
   // 32 bytes に収まる変数の固定長配列は、最初の割当 slot 番号から順番に格納されている
-  const sixthNumsFirst = BigInt(await getStorageHex(deployReceipt.contractAddress, 5));
+  const sixthNumsFirst = parseInt(await getStorageHex(deployReceipt.contractAddress, 5));
   console.log("sixthNums[0]:", sixthNumsFirst);
-  const sixthNumsSecond = BigInt(await getStorageHex(deployReceipt.contractAddress, 6));
+  const sixthNumsSecond = parseInt(await getStorageHex(deployReceipt.contractAddress, 6));
   console.log("sixthNums[1]:", sixthNumsSecond);
-  const sixthNumsThird = BigInt(await getStorageHex(deployReceipt.contractAddress, 7));
+  const sixthNumsThird = parseInt(await getStorageHex(deployReceipt.contractAddress, 7));
   console.log("sixthNums[2]:", sixthNumsThird);
 
   // uint256[] public seventhNums;
